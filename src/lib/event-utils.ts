@@ -1,3 +1,4 @@
+import { getEventDetail } from "@/lib/microcms";
 import type { Event } from "@/lib/microcms";
 import {
     buildCumulativeStandingsTimeline,
@@ -6,20 +7,6 @@ import {
     type MatchPlacementEntry,
     type TournamentResults,
 } from "@/lib/standings";
-
-type GetEventDetail = typeof import("@/lib/microcms")["getEventDetail"];
-
-let cachedGetEventDetail: GetEventDetail | undefined;
-
-async function loadEventDetailFetcher(): Promise<GetEventDetail> {
-    if (cachedGetEventDetail) {
-        return cachedGetEventDetail;
-    }
-
-    const { getEventDetail } = await import("@/lib/microcms");
-    cachedGetEventDetail = getEventDetail;
-    return cachedGetEventDetail;
-}
 
 export const FALLBACK_TOTAL_MATCHES_LABEL = "Total Games";
 export const DEFAULT_STANDINGS_CHUNK_SIZE = 10;
@@ -62,8 +49,7 @@ function isNotFoundError(error: unknown): error is ErrorWithStatus {
 
 export async function loadEvent(eventId: string): Promise<Event> {
     try {
-        const fetchEventDetail = await loadEventDetailFetcher();
-        const event = await fetchEventDetail(eventId);
+        const event = await getEventDetail(eventId);
         if (!event) {
             throw new Response(null, { status: 404, statusText: "Not Found" });
         }
