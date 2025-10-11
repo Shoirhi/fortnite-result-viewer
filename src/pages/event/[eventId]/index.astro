@@ -1,0 +1,194 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+    createStandingsSummary,
+    ensureEventId,
+    loadEvent,
+    parseTournamentResults,
+} from "@/lib/event-utils";
+import "@splidejs/splide/css/core";
+
+export const prerender = false;
+
+const eventId = ensureEventId(Astro.params.eventId);
+const event = await loadEvent(eventId);
+
+Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+
+const rawResults = parseTournamentResults(event.score, { eventId });
+const standings = createStandingsSummary(rawResults);
+const { totalMatchesLabel, chunkedStandings, totalTeams } = standings;
+
+---
+
+<BaseLayout title={`${totalMatchesLabel} - ${event.title}`}>
+    <section class="flex min-h-dvh w-full flex-col p-4 text-black">
+        {
+            totalTeams === 0 ? (
+                <p class="mt-2 rounded-xl border border-black/15 px-6 py-8 text-center text-black/60">
+                    スコアデータが見つかりませんでした。
+                </p>
+            ) : (
+                <header class="mb-2 flex items-center gap-4 text-xs uppercase tracking-[0.3em] text-black/60">
+                    <span class="inline-flex min-w-28 items-center justify-center border border-black/25 px-4 py-2 text-xs font-semibold text-black tabular-nums">
+                        {totalMatchesLabel}
+                    </span>
+                    <span class="h-px flex-1 bg-black/15" />
+                    <span class="font-medium text-black/40">
+                        Total Teams{" "}
+                        <span class="tabular-nums">
+                            {totalTeams}
+                        </span>
+                    </span>
+                </header>
+                <div class="flex-1 overflow-hidden">
+                    <div class="standings-splide splide h-full w-full">
+                        <div class="splide__track h-full">
+                            <ul class="splide__list h-full">
+                                {chunkedStandings.map((chunk) => (
+                                    <li class="splide__slide h-full">
+                                        <div class="flex h-full w-full flex-col">
+                                            
+                                            <div class="flex-1 overflow-hidden">
+                                                <table class="h-full min-w-full text-left text-sm">
+                                                    <thead class="text-xs text-black/60">
+                                                        <tr>
+                                                            <th class="px-5 py-3" />
+                                                            <th class="px-5 py-3" />
+                                                            <th class="px-5 py-3" />
+                                                            <th class="px-5 py-3" />
+                                                            <th class="px-5 py-3 text-right whitespace-nowrap">
+                                                                合計
+                                                            </th>
+                                                            <th class="px-5 py-3 text-right whitespace-nowrap">
+                                                                順位PT
+                                                            </th>
+                                                            <th class="px-5 py-3 text-right whitespace-nowrap">
+                                                                撃破PT
+                                                            </th>
+                                                            <th class="px-5 py-3 text-right whitespace-nowrap">
+                                                                VRs
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-black/10 border">
+                                                        {chunk.map((entry) => (
+                                                            <tr class="transition hover:text-black">
+                                                                <td class="w-16 h-full">
+                                                                    <span class="inline-flex w-full h-full shrink-0 items-center justify-center bg-black text-3xl font-black leading-none text-white tabular-nums py-4">
+                                                                        {
+                                                                            entry.placement
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td class="px-2 h-full w-full inline-flex items-center justify-center tabular-nums">
+                                                                    {entry.rankChange >
+                                                                        0 && (
+                                                                        <div class="text-emerald-700 tabular-nums">
+                                                                            ▲{" "}
+                                                                            {
+                                                                                entry.rankChange
+                                                                            }
+                                                                        </div>
+                                                                    )}
+                                                                    {entry.rankChange <
+                                                                        0 && (
+                                                                        <div class="text-rose-700 tabular-nums">
+                                                                            ▼{" "}
+                                                                            {Math.abs(
+                                                                                entry.rankChange,
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {entry.rankChange ===
+                                                                        0 && (
+                                                                        <div class="text-black/60 tabular-nums">
+                                                                            －
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                                <td class="px-5 py-3 text-lg font-semibold">
+                                                                    {
+                                                                        entry
+                                                                            .team
+                                                                            .teamName
+                                                                    }
+                                                                </td>
+                                                                <td class="px-5 py-3 text-xs text-black/60">
+                                                                    {entry.team
+                                                                        .members
+                                                                        ?.length
+                                                                        ? entry.team.members.join(
+                                                                              " + ",
+                                                                          )
+                                                                        : entry
+                                                                              .team
+                                                                              .playerName}
+                                                                </td>
+                                                                <td class="px-5 py-3 text-right text-xl font-bold tabular-nums whitespace-nowrap">
+                                                                    {
+                                                                        entry
+                                                                            .totals
+                                                                            .totalScore
+                                                                    }
+                                                                </td>
+                                                                <td class="px-5 py-3 text-right text-sm text-black/60 tabular-nums whitespace-nowrap">
+                                                                    {
+                                                                        entry
+                                                                            .totals
+                                                                            .placementScore
+                                                                    }
+                                                                </td>
+                                                                <td class="px-5 py-3 text-right text-sm text-black/60 tabular-nums whitespace-nowrap">
+                                                                    {
+                                                                        entry
+                                                                            .totals
+                                                                            .eliminationScore
+                                                                    }
+                                                                </td>
+                                                                <td class="px-5 py-3 text-right text-sm text-black/60 tabular-nums whitespace-nowrap">
+                                                                    {
+                                                                        entry
+                                                                            .team
+                                                                            .countVR
+                                                                    }
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+    </section>
+</BaseLayout>
+
+<script>
+    import Splide from "@splidejs/splide";
+
+    document.addEventListener("astro:page-load", () => {
+        const root = document.querySelector(".standings-splide");
+        if (!root) return;
+
+        const splide = new Splide(".standings-splide", {
+            type: "loop",
+            perPage: 1,
+            keyboard: "global",
+            arrows: false,
+            pagination: false,
+            drag: false,
+            rewind: true,
+            speed: 1000,
+            easing: "cubic-bezier(0.42, 0, 0.58, 1)",
+        });
+
+        splide.mount();
+    });
+</script>

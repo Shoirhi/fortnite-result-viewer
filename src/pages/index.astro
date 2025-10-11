@@ -1,16 +1,21 @@
 ---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
 
+const events = (await getCollection("events"))
+    .sort(
+        (a, b) =>
+            new Date(b.data.publishedAt).getTime() -
+            new Date(a.data.publishedAt).getTime(),
+    )
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+    <section class="container py-4">
+		{events.map((event)=> (
+			<a href={`/event/${event.id}`}>
+				{event.data.title}
+			</a>
+		))}
+    </section>
+</BaseLayout>
