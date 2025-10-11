@@ -1,0 +1,116 @@
+---
+import type {
+    CumulativeStandingEntry,
+    MatchPlacementEntry,
+} from "@/lib/standings";
+
+type Props = {
+    chunk: Array<CumulativeStandingEntry | MatchPlacementEntry>;
+    variant: "event" | "match";
+};
+
+const { chunk, variant } = Astro.props as Props;
+const isEventSummary = variant === "event";
+const entries = chunk as Array<CumulativeStandingEntry | MatchPlacementEntry>;
+---
+
+<div class="flex-1 overflow-hidden">
+    <table class="h-full min-w-full text-left text-sm">
+        <thead class="text-lg text-foreground/60">
+            <tr>
+                <th class="px-5 py-3" />
+                {isEventSummary && <th class="px-5 py-3" />}
+                <th class="px-5 py-3" />
+                <th class="px-5 py-3" />
+                <th class="px-5 py-3 text-right whitespace-nowrap">
+                    合計
+                </th>
+                <th class="px-5 py-3 text-right whitespace-nowrap">
+                    順位PT
+                </th>
+                <th class="px-5 py-3 text-right whitespace-nowrap">
+                    撃破PT
+                </th>
+                {isEventSummary && (
+                    <th class="px-5 py-3 text-right whitespace-nowrap">
+                        VRs
+                    </th>
+                )}
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-black/10 border">
+            {entries.map((entry) => {
+                const summaryEntry = entry as CumulativeStandingEntry;
+                const matchEntry = entry as MatchPlacementEntry;
+                const placement = isEventSummary
+                    ? summaryEntry.placement
+                    : matchEntry.rank;
+                const rankChange = isEventSummary
+                    ? summaryEntry.rankChange
+                    : 0;
+                const team = entry.team;
+                const members =
+                    team.members?.length > 0
+                        ? team.members.join(" + ")
+                        : team.playerName;
+                const score = isEventSummary
+                    ? summaryEntry.totals.totalScore
+                    : matchEntry.detail.score;
+                const placementScore = isEventSummary
+                    ? summaryEntry.totals.placementScore
+                    : matchEntry.detail.placementScore;
+                const eliminationScore = isEventSummary
+                    ? summaryEntry.totals.eliminationScore
+                    : matchEntry.detail.eliminationScore;
+                const vrCount = isEventSummary ? team.countVR : undefined;
+
+                return (
+                    <tr class="transition hover:text-black">
+                        <td class="w-26 h-full">
+                            <span class="inline-flex w-full h-full shrink-0 items-center justify-center bg-black text-5xl font-black leading-none text-white tabular-nums py-5 italic">
+                                {placement}
+                            </span>
+                        </td>
+                        {isEventSummary && (
+                            <td class="px-4 whitespace-nowrap h-full w-full inline-flex items-center justify-center tabular-nums text-2xl">
+                                {rankChange > 0 ? (
+                                    <div class="text-emerald-700 tabular-nums">
+                                        ▲ {rankChange}
+                                    </div>
+                                ) : rankChange < 0 ? (
+                                    <div class="text-rose-700 tabular-nums">
+                                        ▼ {Math.abs(rankChange)}
+                                    </div>
+                                ) : (
+                                    <div class="text-black/60 tabular-nums">
+                                        －
+                                    </div>
+                                )}
+                            </td>
+                        )}
+                        <td class="px-5 py-3 text-3xl font-bold whitespace-nowrap">
+                            {team.teamName}
+                        </td>
+                        <td class="px-5 py-3 text-xl text-black/80 whitespace-normal truncate">
+                            {members}{members}
+                        </td>
+                        <td class="px-5 py-3 text-right text-4xl font-bold tabular-nums whitespace-nowrap italic">
+                            {score}
+                        </td>
+                        <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                            {placementScore}
+                        </td>
+                        <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                            {eliminationScore}
+                        </td>
+                        {isEventSummary && (
+                            <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                                {vrCount}
+                            </td>
+                        )}
+                    </tr>
+                );
+            })}
+        </tbody>
+    </table>
+</div>
