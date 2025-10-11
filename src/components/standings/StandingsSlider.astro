@@ -1,9 +1,13 @@
 ---
+import type {
+    CumulativeStandingEntry,
+    MatchPlacementEntry,
+} from "@/lib/standings";
 import "@splidejs/splide/css/core";
 import StandingsTable from "./StandingsTable.astro";
 
 type Props = {
-    chunkedStandings: unknown[][];
+    chunkedStandings: (CumulativeStandingEntry | MatchPlacementEntry)[][];
     variant: "event" | "match";
 };
 
@@ -29,8 +33,8 @@ const { chunkedStandings, variant } = Astro.props as Props;
 
     const interactiveTagNames = new Set(["INPUT", "TEXTAREA", "SELECT", "BUTTON"]);
 
-    const initializeSlider = (root) => {
-        const splide = new Splide(root, {
+    const initializeSlider = (root: Element) => {
+        const splide = new Splide(".standings-splide", {
             type: "loop",
             perPage: 1,
             keyboard: "global",
@@ -45,16 +49,20 @@ const { chunkedStandings, variant } = Astro.props as Props;
         splide.mount();
         const slideCount = splide.Components.Slides.getLength();
 
-        const handleKeydown = (event) => {
+        const handleKeydown = (event: KeyboardEvent) => {
             if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
                 return;
             }
 
             const activeElement = document.activeElement;
-            if (
-                activeElement &&
-                (interactiveTagNames.has(activeElement.tagName) || activeElement.isContentEditable)
-            ) {
+            if (activeElement instanceof HTMLElement) {
+                if (
+                    interactiveTagNames.has(activeElement.tagName) ||
+                    activeElement.isContentEditable
+                ) {
+                    return;
+                }
+            } else if (activeElement) {
                 return;
             }
 
@@ -83,6 +91,7 @@ const { chunkedStandings, variant } = Astro.props as Props;
 
     const setup = () => {
         document.querySelectorAll(".standings-splide").forEach((root) => {
+            if (!(root instanceof HTMLElement)) return;
             initializeSlider(root);
         });
     };
