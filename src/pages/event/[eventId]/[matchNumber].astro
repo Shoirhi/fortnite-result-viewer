@@ -1,7 +1,6 @@
 ---
-import StandingsSection from "@/components/standings/StandingsSection.astro";
-import StandingsSlider from "@/components/standings/StandingsSlider.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import MatchStandingsClient from "@/components/standings/MatchStandingsClient";
 import {
     createMatchStandingsSummary,
     ensureEventId,
@@ -13,6 +12,7 @@ export const prerender = false;
 
 const eventId = ensureEventId(Astro.params.eventId);
 const event = await loadEvent(eventId);
+const matchParam = Astro.params.matchNumber ?? "";
 
 Astro.response.headers.set(
     "Cache-Control",
@@ -20,12 +20,18 @@ Astro.response.headers.set(
 );
 
 const rawResults = parseTournamentResults(event.score, { eventId });
-const summary = createMatchStandingsSummary(rawResults, Astro.params.matchNumber);
-const { headingLabel, chunkedStandings, totalTeams } = summary;
+const summary = createMatchStandingsSummary(rawResults, matchParam);
+const { headingLabel } = summary;
+const initialUpdatedAt = event.updatedAt ?? "";
 ---
 
 <BaseLayout title={`${headingLabel} - ${event.title}`}>
-    <StandingsSection headingLabel={headingLabel} totalTeams={totalTeams}>
-        <StandingsSlider chunkedStandings={chunkedStandings} variant="match" />
-    </StandingsSection>
+    <MatchStandingsClient
+        client:load
+        eventId={eventId}
+        eventTitle={event.title}
+        matchParam={matchParam}
+        initialSummary={summary}
+        initialUpdatedAt={initialUpdatedAt}
+    />
 </BaseLayout>

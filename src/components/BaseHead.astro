@@ -1,7 +1,6 @@
 ---
 import "@/styles/global.css";
 import { SITE_TITLE, SITE_DESCRIPTION } from "@/consts";
-import { ClientRouter } from "astro:transitions";
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
@@ -54,6 +53,3 @@ const displayTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
 <meta property="twitter:title" content={displayTitle} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
-
-<!-- View Transitions -->
-<ClientRouter />

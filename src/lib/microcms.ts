@@ -12,10 +12,19 @@ export type Event = {
     score: string;
 } & MicroCMSListContent;
 
+export type EventSummary = Omit<Event, "score">;
+
+const EVENT_SUMMARY_FIELDS = ["id", "title", "publishedAt", "updatedAt"].join(",");
+
 export const getEvents = async (queries?: MicroCMSQueries) => {
-    return await client.getList<Event>({
+    const nextQueries: MicroCMSQueries = {
+        ...queries,
+        fields: queries?.fields ?? EVENT_SUMMARY_FIELDS,
+    };
+
+    return await client.getList<EventSummary>({
         endpoint: "events",
-        queries,
+        queries: nextQueries,
         customRequestInit: {
             cache: "no-store",
         },

@@ -25,6 +25,7 @@
     "microcms-js-sdk": "^3.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "swr": "^2.3.6",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
     "typescript": "^5.9.3"

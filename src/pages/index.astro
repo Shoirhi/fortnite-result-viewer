@@ -1,12 +1,12 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { EventsList } from "@/components/events/EventsList";
 import { getEvents } from "@/lib/microcms";
-
-import { buttonVariants } from "@/components/ui/button";
 
 export const prerender = false;
 
 const { contents: events = [] } = await getEvents({ orders: "-publishedAt" });
+const initialFetchedAt = new Date().toISOString();
 
 Astro.response.headers.set(
     "Cache-Control",
@@ -16,15 +16,10 @@ Astro.response.headers.set(
 
 <BaseLayout>
     <section class="container py-4">
-        <div class="flex flex-col gap-y-1 items-start">
-            {events.map((event) => (
-                <a
-                    href={`/event/${event.id}`}
-                    class={buttonVariants({ variant: "secondary" })}
-                >
-                    {event.title}
-                </a>
-            ))}
-        </div>
+        <EventsList
+            client:load
+            initialEvents={events}
+            initialFetchedAt={initialFetchedAt}
+        />
     </section>
 </BaseLayout>
