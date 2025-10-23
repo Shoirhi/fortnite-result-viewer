@@ -5,13 +5,18 @@ import type {
 } from "@/lib/standings";
 
 type Props = {
-    chunk: Array<CumulativeStandingEntry | MatchPlacementEntry>;
+    entries: Array<CumulativeStandingEntry | MatchPlacementEntry>;
     variant: "event" | "match";
+    limit?: number;
 };
 
-const { chunk, variant } = Astro.props as Props;
+const { entries, variant, limit } = Astro.props as Props;
 const isEventSummary = variant === "event";
-const entries = chunk as Array<CumulativeStandingEntry | MatchPlacementEntry>;
+const resolvedLimit =
+    typeof limit === "number" && Number.isFinite(limit) && limit > 0
+        ? Math.floor(limit)
+        : entries.length;
+const visibleEntries = entries.slice(0, resolvedLimit);
 ---
 
 <div class="flex-1 overflow-hidden">
@@ -39,7 +44,7 @@ const entries = chunk as Array<CumulativeStandingEntry | MatchPlacementEntry>;
             </tr>
         </thead>
         <tbody class="divide-y divide-black/10 border">
-            {entries.map((entry) => {
+            {visibleEntries.map((entry) => {
                 const summaryEntry = entry as CumulativeStandingEntry;
                 const matchEntry = entry as MatchPlacementEntry;
                 const placement = isEventSummary
