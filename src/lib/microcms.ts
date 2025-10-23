@@ -13,7 +13,13 @@ export type Event = {
 } & MicroCMSListContent;
 
 export const getEvents = async (queries?: MicroCMSQueries) => {
-    return await client.getList<Event>({ endpoint: "events", queries });
+    return await client.getList<Event>({
+        endpoint: "events",
+        queries,
+        customRequestInit: {
+            cache: "no-store",
+        },
+    });
 };
 
 export const getEventDetail = async (
@@ -24,5 +30,8 @@ export const getEventDetail = async (
         endpoint: "events",
         contentId,
         queries,
+        customRequestInit: {
+            cache: "no-store",
+        },
     });
 };

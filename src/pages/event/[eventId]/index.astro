@@ -2,17 +2,18 @@
 import StandingsSection from "@/components/standings/StandingsSection.astro";
 import StandingsSlider from "@/components/standings/StandingsSlider.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { ensureEventId, loadEvent } from "@/lib/event-utils";
 import {
     createStandingsSummary,
-    ensureEventId,
-    loadEvent,
     parseTournamentResults,
-} from "@/lib/event-utils";
+} from "@/lib/standings-summary";
+import liveStandingsScript from "@/scripts/live-standings.ts?url";
 
 export const prerender = false;
 
 const eventId = ensureEventId(Astro.params.eventId);
 const event = await loadEvent(eventId);
+const initialUpdatedAt = event.updatedAt ?? "";
 
 Astro.response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 
@@ -23,7 +24,15 @@ const { totalMatchesLabel, chunkedStandings, totalTeams } = standings;
 ---
 
 <BaseLayout title={`${totalMatchesLabel} - ${event.title}`}>
-    <StandingsSection headingLabel={totalMatchesLabel} totalTeams={totalTeams}>
-        <StandingsSlider chunkedStandings={chunkedStandings} variant="event" />
-    </StandingsSection>
+    <div
+        id="standings-root"
+        data-event-id={eventId}
+        data-updated-at={initialUpdatedAt}
+    >
+        <StandingsSection headingLabel={totalMatchesLabel} totalTeams={totalTeams}>
+            <StandingsSlider chunkedStandings={chunkedStandings} variant="event" />
+        </StandingsSection>
+    </div>
 </BaseLayout>
+
+<script type="module" is:inline src={liveStandingsScript}></script>

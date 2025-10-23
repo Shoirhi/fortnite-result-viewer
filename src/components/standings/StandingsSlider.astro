@@ -5,6 +5,7 @@ import type {
 } from "@/lib/standings";
 import "@splidejs/splide/css/core";
 import StandingsTable from "./StandingsTable.astro";
+import standingsSliderScript from "@/components/standings/standings-slider-client.ts?url";
 
 type Props = {
     chunkedStandings: (CumulativeStandingEntry | MatchPlacementEntry)[][];
@@ -28,80 +29,4 @@ const { chunkedStandings, variant } = Astro.props as Props;
     </div>
 </div>
 
-<script>
-    import Splide from "@splidejs/splide";
-
-    const interactiveTagNames = new Set(["INPUT", "TEXTAREA", "SELECT", "BUTTON"]);
-
-    const initializeSlider = (root: Element) => {
-        const splide = new Splide(".standings-splide", {
-            type: "loop",
-            perPage: 1,
-            keyboard: "global",
-            arrows: false,
-            pagination: false,
-            drag: false,
-            rewind: true,
-            speed: 1000,
-            easing: "cubic-bezier(0.42, 0, 0.58, 1)",
-        });
-
-        splide.mount();
-        const slideCount = splide.Components.Slides.getLength();
-
-        const handleKeydown = (event: KeyboardEvent) => {
-            if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
-                return;
-            }
-
-            const activeElement = document.activeElement;
-            if (activeElement instanceof HTMLElement) {
-                if (
-                    interactiveTagNames.has(activeElement.tagName) ||
-                    activeElement.isContentEditable
-                ) {
-                    return;
-                }
-            } else if (activeElement) {
-                return;
-            }
-
-            if (!/^[1-9]$/.test(event.key)) {
-                return;
-            }
-
-            const requestedIndex = Number(event.key);
-            if (requestedIndex > slideCount) {
-                return;
-            }
-
-            event.preventDefault();
-            splide.go(requestedIndex - 1);
-        };
-
-        window.addEventListener("keydown", handleKeydown);
-
-        const teardown = () => {
-            window.removeEventListener("keydown", handleKeydown);
-            splide.destroy();
-        };
-
-        document.addEventListener("astro:before-swap", teardown, { once: true });
-    };
-
-    const setup = () => {
-        document.querySelectorAll(".standings-splide").forEach((root) => {
-            if (!(root instanceof HTMLElement)) return;
-            initializeSlider(root);
-        });
-    };
-
-    document.addEventListener("astro:page-load", setup);
-    document.addEventListener(
-        "astro:before-swap",
-        () => {
-            document.removeEventListener("astro:page-load", setup);
-        },
-        { once: true },
-    );
-</script>
+<script type="module" is:inline src={standingsSliderScript}></script>

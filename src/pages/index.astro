@@ -1,21 +1,30 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getCollection } from "astro:content";
+import { getEvents } from "@/lib/microcms";
 
-const events = (await getCollection("events"))
-    .sort(
-        (a, b) =>
-            new Date(b.data.publishedAt).getTime() -
-            new Date(a.data.publishedAt).getTime(),
-    )
+import { buttonVariants } from "@/components/ui/button";
+
+export const prerender = false;
+
+const { contents: events = [] } = await getEvents({ orders: "-publishedAt" });
+
+Astro.response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+);
 ---
 
 <BaseLayout>
     <section class="container py-4">
-		{events.map((event)=> (
-			<a href={`/event/${event.id}`}>
-				{event.data.title}
-			</a>
-		))}
+        <div class="flex flex-col gap-y-1 items-start">
+            {events.map((event) => (
+                <a
+                    href={`/event/${event.id}`}
+                    class={buttonVariants({ variant: "secondary" })}
+                >
+                    {event.title}
+                </a>
+            ))}
+        </div>
     </section>
 </BaseLayout>
