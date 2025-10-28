@@ -1,0 +1,42 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StandingsSection from "@/components/standings/StandingsSection.astro";
+import StandingsTable from "@/components/standings/StandingsTable.astro";
+import {
+    parseTournamentResults,
+    createStandingsSummary,
+} from "@/lib/standings-summary";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+    const events = await getCollection("events", ({ data }) => {
+        return data.score != null;
+    });
+
+    return events.map((event) => ({
+        params: { eventId: event.id },
+        props: { event },
+    }));
+}
+
+const { event } = Astro.props;
+
+const rawResults = parseTournamentResults(event.data.score);
+const standings = createStandingsSummary(rawResults);
+const { totalMatchesLabel, latestStandings, totalTeams } = standings;
+const summaryLabel = totalMatchesLabel;
+const hasStandings = totalTeams > 0;
+const startPlacement = hasStandings ? 1 : 0;
+const endPlacement = hasStandings ? totalTeams : 0;
+const placementRangeLabel = `${startPlacement}位〜${endPlacement}位`;
+---
+
+<BaseLayout title={`フル | 総合順位 | ${event.data.title}`}>
+    <StandingsSection
+        summaryLabel={summaryLabel}
+        placementRangeLabel={placementRangeLabel}
+        totalTeams={totalTeams}
+    >
+        <StandingsTable entries={latestStandings} variant="event" />
+    </StandingsSection>
+</BaseLayout>

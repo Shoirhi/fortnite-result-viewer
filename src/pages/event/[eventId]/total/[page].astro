@@ -1,0 +1,75 @@
+---
+import StandingsSection from "@/components/standings/StandingsSection.astro";
+import StandingsTable from "@/components/standings/StandingsTable.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+    createStandingsSummary,
+    parseTournamentResults,
+    DEFAULT_STANDINGS_CHUNK_SIZE,
+} from "@/lib/standings-summary";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+
+type EventEntry = CollectionEntry<"events">;
+
+type PageProps = {
+    event: EventEntry;
+    pageIndex: number;
+    totalPages: number;
+};
+
+export async function getStaticPaths() {
+    const events = await getCollection(
+        "events",
+        ({ data }) => data.score != null,
+    );
+
+    return events.flatMap((event) => {
+        const rawResults = parseTournamentResults(event.data.score);
+        const standings = createStandingsSummary(rawResults);
+        const chunkCount = Math.max(standings.chunkedStandings.length, 1);
+
+        return Array.from({ length: chunkCount }, (_, index) => ({
+            params: { eventId: event.id, page: `${index + 1}` },
+            props: {
+                event,
+                pageIndex: index,
+                totalPages: chunkCount,
+            },
+        }));
+    });
+}
+
+const { event, pageIndex, totalPages } = Astro.props as PageProps;
+const rawResults = parseTournamentResults(event.data.score);
+const standings = createStandingsSummary(rawResults);
+
+if (pageIndex < 0 || pageIndex >= totalPages) {
+    return Astro.redirect(`/event/${event.id}/total/1`, 302);
+}
+
+const currentChunk =
+    standings.chunkedStandings.at(pageIndex) ?? [];
+const chunkSize = DEFAULT_STANDINGS_CHUNK_SIZE;
+const startPlacement = pageIndex * chunkSize + 1;
+const endPlacement = startPlacement + chunkSize - 1;
+const hasStandings = standings.totalTeams > 0;
+const resolvedStartPlacement = hasStandings ? startPlacement : 0;
+const resolvedEndPlacement = hasStandings
+    ? Math.min(endPlacement, standings.totalTeams)
+    : 0;
+const placementRangeLabel = `${resolvedStartPlacement}位〜${resolvedEndPlacement}位`;
+const summaryLabel = standings.totalMatchesLabel;
+
+const pageTitle = `${placementRangeLabel} | 総合順位 | ${event.data.title}`;
+---
+
+<BaseLayout title={pageTitle}>
+    <StandingsSection
+        summaryLabel={summaryLabel}
+        placementRangeLabel={placementRangeLabel}
+        totalTeams={standings.totalTeams}
+    >
+        <StandingsTable entries={currentChunk} variant="event" />
+    </StandingsSection>
+</BaseLayout>

@@ -55,18 +55,6 @@ const createMatchStandingsFetcher =
         };
     };
 
-const formatTimestamp = (value: string | undefined) => {
-    if (!value) return "";
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return "";
-
-    return parsed.toLocaleTimeString("ja-JP", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
-};
-
 const StandingsTable = ({ standings }: { standings: MatchPlacementEntry[] }) => (
     <div className="flex-1 overflow-hidden">
         <table className="h-full min-w-full text-left text-sm">
@@ -155,10 +143,15 @@ export function MatchStandingsClient({
         },
     );
 
-    const { summary, updatedAt, eventTitle: latestTitle } = data ?? fallbackData;
+    const { summary, eventTitle: latestTitle } = data ?? fallbackData;
     const { headingLabel, matchStandings, totalTeams } = summary;
     const visibleStandings = matchStandings.slice(0, TOP_LIMIT);
-    const lastUpdatedLabel = formatTimestamp(updatedAt);
+    const hasStandings = matchStandings.length > 0;
+    const startPlacement = hasStandings ? 1 : 0;
+    const endPlacement = hasStandings
+        ? Math.min(TOP_LIMIT, matchStandings.length)
+        : 0;
+    const placementRangeLabel = `${startPlacement}位〜${endPlacement}位`;
 
     useEffect(() => {
         const nextTitle = `${headingLabel} - ${latestTitle}`;
@@ -167,8 +160,6 @@ export function MatchStandingsClient({
         }
     }, [headingLabel, latestTitle]);
 
-    const hasStandings = visibleStandings.length > 0;
-
     return (
         <section
             className={cn(
@@ -176,23 +167,25 @@ export function MatchStandingsClient({
                 className,
             )}
         >
+            <header className="mb-2 flex items-center gap-4 text-xs uppercase tracking-[0.3em] text-black/60">
+                <span className="inline-flex min-w-28 items-center justify-center border-3 px-4 py-2 text-lg font-bold text-black tabular-nums">
+                    {headingLabel}
+                </span>
+                <span className="h-0.5 flex-1 bg-border" />
+                <div className="flex items-center gap-4 text-lg font-bold text-foreground/90">
+                    <span className="tabular-nums">{placementRangeLabel}</span>
+                    <span>
+                        Total Teams{" "}
+                        <span className="tabular-nums">{totalTeams}</span>
+                    </span>
+                </div>
+            </header>
             {!hasStandings ? (
                 <p className="mt-2 rounded-xl border border-black/15 px-6 py-8 text-center text-black/60">
                     スコアデータが見つかりませんでした。
                 </p>
             ) : (
-                <>
-                    <header className="mb-2 flex items-center gap-4 text-xs uppercase tracking-[0.3em] text-black/60">
-                        <span className="inline-flex min-w-28 items-center justify-center border-3 px-4 py-2 text-lg font-bold text-black tabular-nums">
-                            {headingLabel}
-                        </span>
-                        <span className="h-0.5 flex-1 bg-border" />
-                        <span className="font-bold text-lg text-foreground/90">
-                            Total Teams <span className="tabular-nums">{totalTeams}</span>
-                        </span>
-                    </header>
-                    <StandingsTable standings={visibleStandings} />
-                </>
+                <StandingsTable standings={visibleStandings} />
             )}
         </section>
     );

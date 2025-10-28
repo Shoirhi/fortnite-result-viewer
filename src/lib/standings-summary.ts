@@ -6,7 +6,7 @@ import {
     type TournamentResults,
 } from "@/lib/standings";
 
-export const FALLBACK_TOTAL_MATCHES_LABEL = "Total Games";
+export const FALLBACK_TOTAL_MATCHES_LABEL = "総合順位（0ゲーム）";
 export const DEFAULT_STANDINGS_CHUNK_SIZE = 10;
 export const DEFAULT_MATCH_HEADING_LABEL = "Game Result";
 
@@ -17,6 +17,14 @@ export type StandingsSummary = {
     totalMatchesLabel: string;
     totalTeams: number;
 };
+
+export function formatTotalMatchesLabel(totalMatches: number): string {
+    const resolvedMatches =
+        Number.isFinite(totalMatches) && totalMatches > 0
+            ? Math.floor(totalMatches)
+            : 0;
+    return `総合順位（${resolvedMatches}ゲーム）`;
+}
 
 export type MatchStandingsSummary = {
     matchStandings: MatchPlacementEntry[];
@@ -29,8 +37,7 @@ export type MatchStandingsSummary = {
 };
 
 export function parseTournamentResults(
-    score: string | null | undefined,
-    context: { eventId: string },
+    score: string | null | undefined
 ): TournamentResults {
     if (!score) return [];
 
@@ -40,7 +47,6 @@ export function parseTournamentResults(
     } catch (error) {
         console.error(
             "Failed to parse score JSON for event",
-            context.eventId,
             error,
         );
         return [];
@@ -66,10 +72,7 @@ export function createStandingsSummary(
     const cumulativeStandings = buildCumulativeStandingsTimeline(results);
     const latestStandings = cumulativeStandings.at(-1) ?? [];
     const totalMatches = cumulativeStandings.length;
-    const totalMatchesLabel =
-        totalMatches > 0
-            ? `Total of ${totalMatches} Games`
-            : FALLBACK_TOTAL_MATCHES_LABEL;
+    const totalMatchesLabel = formatTotalMatchesLabel(totalMatches);
 
     return {
         latestStandings,
@@ -92,8 +95,8 @@ export function createMatchStandingsSummary(
         typeof matchNumber === "number"
             ? matchNumber
             : typeof matchNumber === "string"
-              ? Number(matchNumber)
-              : Number.NaN;
+                ? Number(matchNumber)
+                : Number.NaN;
 
     const matchIndex =
         Number.isInteger(matchNumberValue) && matchNumberValue > 0

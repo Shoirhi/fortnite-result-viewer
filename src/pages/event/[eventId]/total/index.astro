@@ -1,0 +1,66 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { buttonVariants } from "@/components/ui/button";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+    const events = await getCollection("events");
+
+    return events.map((event) => ({
+        params: { eventId: event.id },
+        props: { event },
+    }));
+}
+
+const { event } = Astro.props;
+---
+
+<BaseLayout title={`総合順位 | ${event.data.title}`}>
+    <section class="container py-4">
+        <Breadcrumb>
+            <BreadcrumbList>
+                <BreadcrumbItem>
+                    <BreadcrumbLink href="/">イベント一覧</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbPage
+                        >総合順位 | {event.data.title}</BreadcrumbPage
+                    >
+                </BreadcrumbItem>
+            </BreadcrumbList>
+        </Breadcrumb>
+        <div class="flex flex-col items-start gap-y-3 mt-4">
+            {
+                [
+                    { path: "full", label: "フル" },
+                    { path: "1", label: "1位〜10位" },
+                    { path: "2", label: "11位〜20位" },
+                    { path: "3", label: "21位〜30位" },
+                    { path: "4", label: "31位〜40位" },
+                    { path: "5", label: "41位〜50位" },
+                    { path: "6", label: "51位〜60位" },
+                    { path: "7", label: "61位〜70位" },
+                    { path: "8", label: "71位〜80位" },
+                    { path: "9", label: "81位〜90位" },
+                    { path: "10", label: "91位〜100位" },
+                ].map((item) => (
+                    <a
+                        href={`/event/${event.id}/total/${item.path}`}
+                        class={buttonVariants({ variant: "secondary" })}
+                    >
+                        {item.label}
+                    </a>
+                ))
+            }
+        </div>
+    </section>
+</BaseLayout>

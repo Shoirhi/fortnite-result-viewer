@@ -1,0 +1,108 @@
+---
+import StandingsSection from "@/components/standings/StandingsSection.astro";
+import StandingsTable from "@/components/standings/StandingsTable.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+    DEFAULT_STANDINGS_CHUNK_SIZE,
+    createMatchStandingsSummary,
+    createStandingsSummary,
+    parseTournamentResults,
+} from "@/lib/standings-summary";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+
+type EventEntry = CollectionEntry<"events">;
+
+type PageProps = {
+    event: EventEntry;
+    matchNumber: number;
+    pageIndex: number;
+    totalPages: number;
+    totalMatches: number;
+};
+
+export async function getStaticPaths() {
+    const events = await getCollection(
+        "events",
+        ({ data }) => data.score != null,
+    );
+
+    return events.flatMap((event) => {
+        const results = parseTournamentResults(event.data.score);
+        const standings = createStandingsSummary(results);
+        const matchCount = Math.max(standings.totalMatches, 1);
+
+        return Array.from(
+            { length: matchCount },
+            (_, matchIndex) => matchIndex + 1,
+        ).flatMap((matchNumber) => {
+            const summary = createMatchStandingsSummary(
+                results,
+                matchNumber,
+            );
+            const chunkCount = Math.max(
+                summary.chunkedStandings.length,
+                1,
+            );
+
+            return Array.from(
+                { length: chunkCount },
+                (_, chunkIndex) => ({
+                    params: {
+                        eventId: event.id,
+                        matchNumber: `${matchNumber}`,
+                        page: `${chunkIndex + 1}`,
+                    },
+                    props: {
+                        event,
+                        matchNumber,
+                        pageIndex: chunkIndex,
+                        totalPages: chunkCount,
+                        totalMatches: standings.totalMatches,
+                    },
+                }),
+            );
+        });
+    });
+}
+
+const { event, matchNumber, pageIndex, totalPages, totalMatches } =
+    Astro.props as PageProps;
+const results = parseTournamentResults(event.data.score);
+const summary = createMatchStandingsSummary(results, matchNumber);
+const chunkSize = DEFAULT_STANDINGS_CHUNK_SIZE;
+
+if (totalMatches > 0 && summary.matchIndex < 0) {
+    return Astro.redirect(`/event/${event.id}/1/${pageIndex + 1}`, 302);
+}
+
+if (pageIndex < 0 || pageIndex >= totalPages) {
+    return Astro.redirect(`/event/${event.id}/${matchNumber}/1`, 302);
+}
+
+const currentChunk = summary.chunkedStandings.at(pageIndex) ?? [];
+const hasStandings = summary.totalTeams > 0;
+const startPlacement = pageIndex * chunkSize + 1;
+const endPlacement = startPlacement + chunkSize - 1;
+const resolvedStartPlacement = hasStandings ? startPlacement : 0;
+const resolvedEndPlacement = hasStandings
+    ? Math.min(endPlacement, summary.totalTeams)
+    : 0;
+const placementRangeLabel = `${resolvedStartPlacement}位〜${resolvedEndPlacement}位`;
+const matchHeadingLabel =
+    typeof summary.matchDisplayNumber === "number"
+        ? `第${summary.matchDisplayNumber}試合`
+        : summary.headingLabel;
+const pageTitle = `${placementRangeLabel} | ${matchHeadingLabel} | ${event.data.title}`;
+const summaryLabel = summary.headingLabel;
+---
+
+<BaseLayout title={pageTitle}>
+    <StandingsSection
+        summaryLabel={summaryLabel}
+        placementRangeLabel={placementRangeLabel}
+        totalTeams={summary.totalTeams}
+    >
+        <StandingsTable entries={currentChunk} variant="match" />
+    </StandingsSection>
+</BaseLayout>

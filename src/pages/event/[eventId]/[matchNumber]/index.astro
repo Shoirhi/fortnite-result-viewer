@@ -1,0 +1,114 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { buttonVariants } from "@/components/ui/button";
+import {
+    DEFAULT_STANDINGS_CHUNK_SIZE,
+    createMatchStandingsSummary,
+    createStandingsSummary,
+    parseTournamentResults,
+} from "@/lib/standings-summary";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+
+type EventEntry = CollectionEntry<"events">;
+
+type PageProps = {
+    event: EventEntry;
+    matchNumber: number;
+    totalMatches: number;
+};
+
+export async function getStaticPaths() {
+    const events = await getCollection(
+        "events",
+        ({ data }) => data.score != null,
+    );
+
+    return events.flatMap((event) => {
+        const results = parseTournamentResults(event.data.score);
+        const standings = createStandingsSummary(results);
+        const matchCount = Math.max(standings.totalMatches, 1);
+
+        return Array.from({ length: matchCount }, (_, index) => ({
+            params: {
+                eventId: event.id,
+                matchNumber: `${index + 1}`,
+            },
+            props: {
+                event,
+                matchNumber: index + 1,
+                totalMatches: standings.totalMatches,
+            },
+        }));
+    });
+}
+
+const { event, matchNumber, totalMatches } = Astro.props as PageProps;
+const results = parseTournamentResults(event.data.score);
+const summary = createMatchStandingsSummary(results, matchNumber);
+
+if (totalMatches > 0 && summary.matchIndex < 0) {
+    return Astro.redirect(`/event/${event.id}/1`, 302);
+}
+
+const chunkSize = DEFAULT_STANDINGS_CHUNK_SIZE;
+const matchDisplayNumber =
+    typeof summary.matchDisplayNumber === "number"
+        ? summary.matchDisplayNumber
+        : matchNumber;
+const MAX_SEGMENTS = 10;
+const chunkLinks = Array.from({ length: MAX_SEGMENTS }, (_, index) => {
+    const startPlacement = index * chunkSize + 1;
+    const endPlacement = startPlacement + chunkSize - 1;
+    return {
+        path: `${index + 1}`,
+        label: `${startPlacement}位〜${endPlacement}位`,
+    };
+});
+const headingLabel =
+    typeof summary.matchDisplayNumber === "number"
+        ? `第${summary.matchDisplayNumber}試合`
+        : "試合結果";
+---
+
+<BaseLayout title={`${headingLabel} | ${event.data.title}`}>
+    <section class="container py-4">
+        <Breadcrumb>
+            <BreadcrumbList>
+                <BreadcrumbItem>
+                    <BreadcrumbLink href="/">イベント一覧</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbPage
+                        >{headingLabel} | {event.data.title}</BreadcrumbPage
+                    >
+                </BreadcrumbItem>
+            </BreadcrumbList>
+        </Breadcrumb>
+        <div class="flex flex-col items-start gap-y-3 mt-4">
+            <a
+                href={`/event/${event.id}/${matchNumber}/full`}
+                class={buttonVariants({ variant: "secondary" })}
+            >
+                フル
+            </a>
+            {chunkLinks.map((item) => (
+                <a
+                    href={`/event/${event.id}/${matchNumber}/${item.path}`}
+                    class={buttonVariants({ variant: "secondary" })}
+                >
+                    {item.label}
+                </a>
+            ))}
+        </div>
+    </section>
+</BaseLayout>

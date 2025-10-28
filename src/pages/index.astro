@@ -1,25 +1,52 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { EventsList } from "@/components/events/EventsList";
-import { getEvents } from "@/lib/microcms";
+import FormattedDate from "@/components/FormattedDate.astro";
+import { buttonVariants } from "@/components/ui/button";
 
-export const prerender = false;
+import { getCollection } from "astro:content";
 
-const { contents: events = [] } = await getEvents({ orders: "-publishedAt" });
-const initialFetchedAt = new Date().toISOString();
-
-Astro.response.headers.set(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate",
-);
+const events = (await getCollection("events"))
+    .sort(
+        (a, b) =>
+            new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+    )
+    .slice(0, 6);
 ---
 
 <BaseLayout>
     <section class="container py-4">
-        <EventsList
-            client:load
-            initialEvents={events}
-            initialFetchedAt={initialFetchedAt}
-        />
+        {
+            events.length > 0 && (
+                <div class="divide-y border-y">
+                    {events.map((event) => (
+                        <div class="block py-4">
+                            <p class="text-sm">
+                                <FormattedDate
+                                    date={new Date(event.data.date)}
+                                />
+                            </p>
+                            <p>{event.data.title}</p>
+                            <div class="space-x-3 mt-3">
+                                {[
+                                    { path: "total", label: "総合順位" },
+                                    { path: "1", label: "1試合目" },
+                                    { path: "2", label: "2試合目" },
+                                    { path: "3", label: "3試合目" },
+                                ].map((item) => (
+                                    <a
+                                        href={`/event/${event.id}/${item.path}`}
+                                        class={buttonVariants({
+                                            variant: "secondary",
+                                        })}
+                                    >
+                                        {item.label}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        }
     </section>
 </BaseLayout>
