@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
 
-import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 
@@ -9,7 +8,6 @@ import react from '@astrojs/react';
 export default defineConfig({
   site: "https://fortnite-result-viewer.plain-star-15af.workers.dev",
   output: "server",
-  adapter: cloudflare(),
 
   vite: {
     plugins: [tailwindcss()]
