@@ -5,8 +5,6 @@ import tailwindcss from '@tailwindcss/vite';
 
 import react from '@astrojs/react';
 
-import cloudflare from "@astrojs/cloudflare";
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://fortnite-result-viewer.plain-star-15af.workers.dev",
@@ -22,7 +20,5 @@ export default defineConfig({
       MICROCMS_SERVICE_DOMAIN: envField.string({ context: "server", access: "secret" }),
       MICROCMS_API_KEY: envField.string({ context: "server", access: "secret" }),
     }
-  },
-
-  adapter: cloudflare(),
+  }
 });

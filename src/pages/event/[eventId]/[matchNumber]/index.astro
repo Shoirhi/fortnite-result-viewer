@@ -60,10 +60,6 @@ if (totalMatches > 0 && summary.matchIndex < 0) {
 }
 
 const chunkSize = DEFAULT_STANDINGS_CHUNK_SIZE;
-const matchDisplayNumber =
-    typeof summary.matchDisplayNumber === "number"
-        ? summary.matchDisplayNumber
-        : matchNumber;
 const MAX_SEGMENTS = 10;
 const chunkLinks = Array.from({ length: MAX_SEGMENTS }, (_, index) => {
     const startPlacement = index * chunkSize + 1;

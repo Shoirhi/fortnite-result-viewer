@@ -1,18 +1,6 @@
 import { getEventDetail } from "@/lib/microcms";
 import type { Event } from "@/lib/microcms";
 
-export {
-    FALLBACK_TOTAL_MATCHES_LABEL,
-    DEFAULT_STANDINGS_CHUNK_SIZE,
-    DEFAULT_MATCH_HEADING_LABEL,
-    parseTournamentResults,
-    chunkArray,
-    createStandingsSummary,
-    createMatchStandingsSummary,
-    type StandingsSummary,
-    type MatchStandingsSummary,
-} from "@/lib/standings-summary";
-
 type ErrorWithStatus = { status?: number };
 
 export function ensureEventId(value: string | undefined | null): string {
