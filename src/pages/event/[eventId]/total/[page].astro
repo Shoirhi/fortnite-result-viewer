@@ -15,7 +15,6 @@ type EventEntry = CollectionEntry<"events">;
 type PageProps = {
     event: EventEntry;
     pageIndex: number;
-    totalPages: number;
 };
 
 export async function getStaticPaths() {
@@ -34,19 +33,14 @@ export async function getStaticPaths() {
             props: {
                 event,
                 pageIndex: index,
-                totalPages: chunkCount,
             },
         }));
     });
 }
 
-const { event, pageIndex, totalPages } = Astro.props as PageProps;
+const { event, pageIndex } = Astro.props as PageProps;
 const rawResults = parseTournamentResults(event.data.score);
 const standings = createStandingsSummary(rawResults);
-
-if (pageIndex < 0 || pageIndex >= totalPages) {
-    return Astro.redirect(`/event/${event.id}/total/1`, 302);
-}
 
 const currentChunk =
     standings.chunkedStandings.at(pageIndex) ?? [];

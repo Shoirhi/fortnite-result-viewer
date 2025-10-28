@@ -17,8 +17,6 @@ type PageProps = {
     event: EventEntry;
     matchNumber: number;
     pageIndex: number;
-    totalPages: number;
-    totalMatches: number;
 };
 
 export async function getStaticPaths() {
@@ -57,8 +55,6 @@ export async function getStaticPaths() {
                         event,
                         matchNumber,
                         pageIndex: chunkIndex,
-                        totalPages: chunkCount,
-                        totalMatches: standings.totalMatches,
                     },
                 }),
             );
@@ -66,19 +62,11 @@ export async function getStaticPaths() {
     });
 }
 
-const { event, matchNumber, pageIndex, totalPages, totalMatches } =
+const { event, matchNumber, pageIndex } =
     Astro.props as PageProps;
 const results = parseTournamentResults(event.data.score);
 const summary = createMatchStandingsSummary(results, matchNumber);
 const chunkSize = DEFAULT_STANDINGS_CHUNK_SIZE;
-
-if (totalMatches > 0 && summary.matchIndex < 0) {
-    return Astro.redirect(`/event/${event.id}/1/${pageIndex + 1}`, 302);
-}
-
-if (pageIndex < 0 || pageIndex >= totalPages) {
-    return Astro.redirect(`/event/${event.id}/${matchNumber}/1`, 302);
-}
 
 const currentChunk = summary.chunkedStandings.at(pageIndex) ?? [];
 const hasStandings = summary.totalTeams > 0;

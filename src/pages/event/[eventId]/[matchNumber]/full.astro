@@ -15,7 +15,6 @@ type EventEntry = CollectionEntry<"events">;
 type PageProps = {
     event: EventEntry;
     matchNumber: number;
-    totalMatches: number;
 };
 
 export async function getStaticPaths() {
@@ -37,19 +36,14 @@ export async function getStaticPaths() {
             props: {
                 event,
                 matchNumber: index + 1,
-                totalMatches: standings.totalMatches,
             },
         }));
     });
 }
 
-const { event, matchNumber, totalMatches } = Astro.props as PageProps;
+const { event, matchNumber } = Astro.props as PageProps;
 const results = parseTournamentResults(event.data.score);
 const summary = createMatchStandingsSummary(results, matchNumber);
-
-if (totalMatches > 0 && summary.matchIndex < 0) {
-    return Astro.redirect(`/event/${event.id}/1/full`, 302);
-}
 
 const { matchStandings, totalTeams } = summary;
 const hasStandings = totalTeams > 0;

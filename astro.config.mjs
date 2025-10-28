@@ -7,7 +7,7 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   site: "https://fortnite-result-viewer.plain-star-15af.workers.dev",
-  output: "server",
+  output: "static",
 
   vite: {
     plugins: [tailwindcss()]
