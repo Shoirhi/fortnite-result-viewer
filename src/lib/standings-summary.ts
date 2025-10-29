@@ -8,7 +8,7 @@ import {
 
 export const FALLBACK_TOTAL_MATCHES_LABEL = "総合順位（0ゲーム）";
 export const DEFAULT_STANDINGS_CHUNK_SIZE = 10;
-export const DEFAULT_MATCH_HEADING_LABEL = "Game Result";
+export const DEFAULT_MATCH_HEADING_LABEL = "試合結果";
 
 export type StandingsSummary = {
     latestStandings: CumulativeStandingEntry[];
@@ -116,7 +116,7 @@ export function createMatchStandingsSummary(
 
     const headingLabel =
         typeof matchDisplayNumber === "number"
-            ? `Game ${matchDisplayNumber} Result`
+            ? `第${matchDisplayNumber}試合`
             : DEFAULT_MATCH_HEADING_LABEL;
 
     return {
