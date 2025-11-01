@@ -70,14 +70,14 @@ const visibleEntries = entries.slice(0, resolvedLimit);
                 const vrCount = isEventSummary ? team.countVR : undefined;
 
                 return (
-                    <tr class="transition hover:text-black">
-                        <td class="w-26 h-full">
-                            <span class="inline-flex w-full h-full shrink-0 items-center justify-center bg-black text-5xl font-black leading-none text-white tabular-nums py-5 italic">
+                    <tr class="transition hover:text-black h-[90px] break-all">
+                        <td class="w-22 align-middle">
+                            <span class="inline-flex w-full h-full shrink-0 items-center justify-center bg-black text-4xl font-black leading-none text-white tabular-nums italic">
                                 {placement}
                             </span>
                         </td>
                         {isEventSummary && (
-                            <td class="px-4 whitespace-nowrap h-full w-full inline-flex items-center justify-center tabular-nums text-2xl">
+                            <td class="px-4 whitespace-nowrap w-full h-full inline-flex items-center justify-center tabular-nums text-2xl">
                                 {rankChange > 0 ? (
                                     <div class="text-emerald-700 tabular-nums">
                                         ▲ {rankChange}
@@ -93,23 +93,23 @@ const visibleEntries = entries.slice(0, resolvedLimit);
                                 )}
                             </td>
                         )}
-                        <td class="px-5 py-3 text-3xl font-bold whitespace-nowrap">
+                        <td class="px-5 text-2xl leading-[1.1] h-full font-bold align-middle">
                             {team.teamName}
                         </td>
-                        <td class="px-5 py-3 text-xl text-black/80 whitespace-normal truncate">
+                        <td class="px-5 text-xl leading-[1.2] h-full text-black/80 whitespace-normal truncate align-middle">
                             {members}
                         </td>
-                        <td class="px-5 py-3 text-right text-4xl font-bold tabular-nums whitespace-nowrap italic">
+                        <td class="px-5 text-right h-full text-4xl font-bold tabular-nums whitespace-nowrap italic align-middle">
                             {score}
                         </td>
-                        <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                        <td class="px-5 text-right h-full text-2xl text-black/90 tabular-nums whitespace-nowrap align-middle">
                             {placementScore}
                         </td>
-                        <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                        <td class="px-5 text-right h-full text-2xl text-black/90 tabular-nums whitespace-nowrap align-middle">
                             {eliminationScore}
                         </td>
                         {isEventSummary && (
-                            <td class="px-5 py-3 text-right text-2xl text-black/90 tabular-nums whitespace-nowrap">
+                            <td class="px-5 text-right h-full text-2xl text-black/90 tabular-nums whitespace-nowrap align-middle">
                                 {vrCount}
                             </td>
                         )}
