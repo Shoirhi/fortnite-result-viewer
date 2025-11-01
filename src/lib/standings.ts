@@ -19,7 +19,7 @@ export type TeamResult = {
   avgAliminations: number
   avgPlacement: number
   numOfMatches: number
-  detailScores: MatchDetail[]
+  detailScores: Array<MatchDetail | null>
 }
 
 export type TournamentResults = TeamResult[]
@@ -79,7 +79,9 @@ const computeCumulativeTotals = (
   matchIndex: number,
 ): CumulativeTotals => {
   const upperBound = Math.min(team.detailScores.length, matchIndex + 1)
-  const relevantMatches = team.detailScores.slice(0, upperBound)
+  const relevantMatches = team.detailScores
+    .slice(0, upperBound)
+    .filter((match): match is MatchDetail => match != null)
 
   if (relevantMatches.length === 0) {
     return {
