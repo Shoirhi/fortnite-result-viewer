@@ -56,7 +56,7 @@ const visibleEntries = entries.slice(0, resolvedLimit);
                 const team = entry.team;
                 const members =
                     team.members?.length > 0
-                        ? team.members.join(" + ")
+                        ? team.members.join("\n")
                         : team.playerName;
                 const score = isEventSummary
                     ? summaryEntry.totals.totalScore
@@ -96,7 +96,7 @@ const visibleEntries = entries.slice(0, resolvedLimit);
                         <td class="px-2 text-3xl leading-[1.1] h-full font-bold align-middle">
                             {team.teamName}
                         </td>
-                        <td class="px-2 text-2xl leading-[1.2] h-full text-black whitespace-normal truncate font-bold align-middle">
+                        <td class="px-2 text-2xl leading-[1.2] h-full text-black whitespace-pre-line font-bold align-middle">
                             {members}
                         </td>
                         <td class="px-2 text-right h-full text-5xl font-bold tabular-nums font-mono whitespace-nowrap align-middle tracking-tighter">
