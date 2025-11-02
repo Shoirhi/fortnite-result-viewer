@@ -43,7 +43,7 @@ const visibleEntries = entries.slice(0, resolvedLimit);
                 )}
             </tr>
         </thead>
-        <tbody class="divide-y divide-black/10 border">
+        <tbody class="divide-y divide-black/10">
             {visibleEntries.map((entry) => {
                 const summaryEntry = entry as CumulativeStandingEntry;
                 const matchEntry = entry as MatchPlacementEntry;
