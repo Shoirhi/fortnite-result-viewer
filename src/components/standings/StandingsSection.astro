@@ -10,7 +10,7 @@ const { summaryLabel, placementRangeLabel, totalTeams } = Astro.props as Props;
 
 <section class="flex min-h-dvh w-full max-w-[1440px] mx-auto flex-col p-4 text-black">
     <header class="mb-2 flex items-center gap-4 text-xs uppercase tracking-[0.3em] text-black/60">
-        <span class="inline-flex min-w-28 items-center justify-center border-3 px-4 py-2 text-lg font-bold text-black tabular-nums">
+        <span class="inline-flex min-w-28 items-center justify-center px-4 py-2 text-lg font-bold text-black tabular-nums">
             {summaryLabel}
         </span>
         <div class="flex items-center gap-4 text-lg font-bold text-foreground/90">
@@ -18,7 +18,7 @@ const { summaryLabel, placementRangeLabel, totalTeams } = Astro.props as Props;
                 {placementRangeLabel}
             </span>
         </div>
-        <span class="h-0.5 flex-1 bg-border" />
+        <span class="h-0.5 flex-1" />
         <div class="flex items-center gap-4 text-lg font-bold text-foreground/90">
             <span>
                 Total Teams{" "}
